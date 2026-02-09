@@ -1,0 +1,20 @@
+{
+  "allFiles": [
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/ReTerminal/core/main/src/main/java/com/rk/terminal/App.kt",
+      "selection": {
+        "end": {
+          "column": 9,
+          "index": 1936,
+          "line": 62
+        },
+        "start": {
+          "column": 9,
+          "index": 1936,
+          "line": 62
+        }
+      }
+    }
+  ],
+  "selectedFile": "/storage/emulated/0/AndroidIDEProjects/ReTerminal/core/main/src/main/java/com/rk/terminal/App.kt"
+}
