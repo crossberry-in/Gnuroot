@@ -39,20 +39,52 @@ object MkSession {
                 "EXTERNAL_STORAGE" to System.getenv("EXTERNAL_STORAGE")
             )
 
-            val workingDir = pendingCommand?.workingDir ?: alpineHomeDir().path
+            val workingDir: File
+            val initHostFile: File
+            val initInsideFile: File
 
-            val initFile: File = localBinDir().child("init-host")
+            when (workingMode) {
+                WorkingMode.ALPINE -> {
+                    workingDir = alpineHomeDir()
+                    initHostFile = localBinDir().child("init-host")
+                    initInsideFile = localBinDir().child("init")
 
-            if (initFile.exists().not()){
-                initFile.createFileIfNot()
-                initFile.writeText(assets.open("init-host.sh").bufferedReader().use { it.readText() })
-            }
+                    if (!initHostFile.exists()) {
+                        initHostFile.createFileIfNot()
+                        initHostFile.writeText(assets.open("init-host.sh").bufferedReader().use { it.readText() })
+                    }
+                    if (!initInsideFile.exists()) {
+                        initInsideFile.createFileIfNot()
+                        initInsideFile.writeText(assets.open("init.sh").bufferedReader().use { it.readText() })
+                    }
+                }
+                WorkingMode.UBUNTU -> {
+                    workingDir = filesDir.parentFile!!.resolve("local/ubuntu")
+                    initHostFile = localBinDir().child("init-ubuntu-host")
+                    initInsideFile = localBinDir().child("init-ubuntu")
 
+                    if (!initHostFile.exists()) {
+                        initHostFile.createFileIfNot()
+                        initHostFile.writeText(assets.open("init-ubuntu-host.sh").bufferedReader().use { it.readText() })
+                    }
+                    if (!initInsideFile.exists()) {
+                        initInsideFile.createFileIfNot()
+                        initInsideFile.writeText(assets.open("init-ubuntu.sh").bufferedReader().use { it.readText() })
+                    }
+                }
+                else -> {
+                    workingDir = pendingCommand?.workingDir ?: alpineHomeDir()
+                    initHostFile = localBinDir().child("init-host")
+                    initInsideFile = localBinDir().child("init")
 
-            localBinDir().child("init").apply {
-                if (exists().not()){
-                    createFileIfNot()
-                    writeText(assets.open("init.sh").bufferedReader().use { it.readText() })
+                    if (!initHostFile.exists()) {
+                        initHostFile.createFileIfNot()
+                        initHostFile.writeText(assets.open("init-host.sh").bufferedReader().use { it.readText() })
+                    }
+                    if (!initInsideFile.exists()) {
+                        initInsideFile.createFileIfNot()
+                        initInsideFile.writeText(assets.open("init.sh").bufferedReader().use { it.readText() })
+                    }
                 }
             }
 
@@ -113,8 +145,8 @@ object MkSession {
             val args: Array<String>
 
             val shell = if (pendingCommand == null) {
-                args = if (workingMode == WorkingMode.ALPINE){
-                    arrayOf("-c",initFile.absolutePath)
+                args = if (workingMode == WorkingMode.ALPINE || workingMode == WorkingMode.UBUNTU){
+                    arrayOf("-c", initHostFile.absolutePath)
                 }else{
                     arrayOf()
                 }

@@ -16,6 +16,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.rk.settings.Settings
+import com.rk.settings.Settings
 import com.rk.terminal.ui.activities.terminal.MainActivity
 import com.rk.terminal.ui.animations.NavigationAnimationTransitions
 import com.rk.terminal.ui.routes.MainActivityRoutes
@@ -76,7 +77,8 @@ fun MainActivityNavHost(modifier: Modifier = Modifier,navController: NavHostCont
     ) {
 
         composable(MainActivityRoutes.MainScreen.route) {
-            if (Rootfs.isDownloaded.value){
+            val mode = Settings.working_Mode
+            if (Rootfs.isModeReady(mode)){
                 val config = LocalConfiguration.current
                 if (Configuration.ORIENTATION_LANDSCAPE == config.orientation){
                     UpdateStatusBar(mainActivity, show = horizontal_statusBar.value)
@@ -86,7 +88,7 @@ fun MainActivityNavHost(modifier: Modifier = Modifier,navController: NavHostCont
 
                 TerminalScreen(mainActivityActivity = mainActivity, navController = navController)
             }else{
-                Downloader(mainActivity = mainActivity, navController = navController)
+                Downloader(mainActivity = mainActivity, navController = navController, requiredMode = mode)
             }
         }
         composable(MainActivityRoutes.Settings.route) {

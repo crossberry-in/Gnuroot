@@ -27,7 +27,8 @@ import java.net.UnknownHostException
 fun Downloader(
     modifier: Modifier = Modifier,
     mainActivity: MainActivity,
-    navController: NavHostController
+    navController: NavHostController,
+    requiredMode: Int = com.rk.terminal.ui.screens.settings.WorkingMode.ALPINE
 ) {
     val context = LocalContext.current
     var progress by remember { mutableFloatStateOf(0f) }
@@ -35,23 +36,36 @@ fun Downloader(
     var isSetupComplete by remember { mutableStateOf(false) }
     var needsDownload by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(requiredMode) {
 
         try {
             val abi = Build.SUPPORTED_ABIS.firstOrNull {
                 it in abiMap
             } ?: throw RuntimeException("Unsupported CPU")
 
-            val filesToDownload = listOf(
-                "libtalloc.so.2" to abiMap[abi]!!.talloc,
-                "proot" to abiMap[abi]!!.proot,
-                "alpine.tar.gz" to abiMap[abi]!!.alpine
-            ).map { (name, url) -> DownloadFile(url, Rootfs.reTerminal.child(name)) }
+            // Base files: proot and libtalloc
+            val files = mutableListOf(
+                DownloadFile(abiMap[abi]!!.talloc, Rootfs.reTerminal.child("libtalloc.so.2")),
+                DownloadFile(abiMap[abi]!!.proot, Rootfs.reTerminal.child("proot"))
+            )
 
-            needsDownload = filesToDownload.any { !it.outputFile.exists() }
+            // Add rootfs based on required mode
+            when (requiredMode) {
+                com.rk.terminal.ui.screens.settings.WorkingMode.ALPINE -> {
+                    files.add(DownloadFile(abiMap[abi]!!.alpine, Rootfs.reTerminal.child("alpine.tar.gz")))
+                }
+                com.rk.terminal.ui.screens.settings.WorkingMode.UBUNTU -> {
+                    val ubuntuUrl = getUbuntuUrl(abi) ?: throw RuntimeException("Unsupported ABI for Ubuntu: $abi")
+                    files.add(DownloadFile(ubuntuUrl, Rootfs.reTerminal.child("ubuntu-base.tar.gz")))
+                }
+                // Android mode doesn't need rootfs
+                else -> {}
+            }
+
+            needsDownload = files.any { !it.outputFile.exists() }
 
             setupEnvironment(
-                filesToDownload,
+                files,
                 onProgress = { completed, total, currentProgress ->
                     if (needsDownload) {
                         progress = ((completed + currentProgress) / total).coerceIn(0f, 1f)
@@ -160,3 +174,12 @@ private val abiMap = mapOf(
 )
 
 private data class AbiUrls(val talloc: String, val proot: String, val alpine: String)
+
+private fun getUbuntuUrl(abi: String): String? {
+    return when (abi) {
+        "x86_64" -> "https://cdimage.ubuntu.com/ubuntu-base/releases/jammy/release/ubuntu-base-22.04-base-amd64.tar.gz"
+        "arm64-v8a" -> "https://cdimage.ubuntu.com/ubuntu-base/releases/jammy/release/ubuntu-base-22.04-base-arm64.tar.gz"
+        "armeabi-v7a" -> "https://cdimage.ubuntu.com/ubuntu-base/releases/jammy/release/ubuntu-base-22.04-base-armhf.tar.gz"
+        else -> null
+    }
+}
