@@ -1,1 +1,1 @@
-Terminal Emulator
+genroot - Alpine & Ubuntu Linux Terminal
