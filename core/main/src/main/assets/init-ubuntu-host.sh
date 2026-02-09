@@ -3,10 +3,6 @@ set -e
 export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/share/bin:/usr/share/sbin:/usr/local/bin:/usr/local/sbin:/system/bin:/system/xbin
 export HOME=/root
 
-if [ ! -s /etc/resolv.conf ]; then
-    echo "nameserver 8.8.8.8" > /etc/resolv.conf
-fi
-
 export PS1="\[\e[38;5;46m\]\u@genroot \[\033[39m\]\w \[\033[0m\]\\$ "
 
 required_packages="bash gcompat glib nano"
@@ -32,14 +28,16 @@ if [[ ! -f /linkerconfig/ld.config.txt ]];then
 fi
 
 UBUNTU_DIR=$PREFIX/local/ubuntu
-mkdir -p $UBUNTU_DIR
+mkdir -p "$UBUNTU_DIR"
 
-if [ -z "$(ls -A "$UBUNTU_DIR" | grep -vE '^(root|tmp)$')" ]; then
+# Check if Ubuntu rootfs is already extracted by looking for /etc/passwd
+if [ ! -f "$UBUNTU_DIR/etc/passwd" ]; then
     if [ ! -f "$PREFIX/files/ubuntu-base.tar.gz" ]; then
         echo "Ubuntu base rootfs not found at $PREFIX/files/ubuntu-base.tar.gz"
         echo "Please download it first via the app or manually."
         exit 1
     fi
+    echo "Extracting Ubuntu rootfs..."
     tar -xf "$PREFIX/files/ubuntu-base.tar.gz" -C "$UBUNTU_DIR"
 fi
 
