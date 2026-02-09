@@ -59,7 +59,11 @@ object MkSession {
                     }
                 }
                 WorkingMode.UBUNTU -> {
-                    workingDir = filesDir.parentFile!!.resolve("local/ubuntu").absolutePath
+                    val ubuntuDir = filesDir.parentFile!!.resolve("local/ubuntu")
+                    if (!ubuntuDir.exists()) {
+                        ubuntuDir.mkdirs()
+                    }
+                    workingDir = ubuntuDir.absolutePath
                     initHostFile = localBinDir().child("init-ubuntu-host")
                     initInsideFile = localBinDir().child("init-ubuntu")
 
