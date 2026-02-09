@@ -188,5 +188,21 @@ fun Settings(modifier: Modifier = Modifier,navController: NavController,mainActi
                 })
 
         }
+
+        PreferenceGroup(heading = "About") {
+            SettingsToggle(
+                label = "About genroot",
+                showSwitch = false,
+                sideEffect = {
+                    navController.navigate(MainActivityRoutes.AppInfo.route)
+                },
+                endWidget = {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                        contentDescription = null,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                })
+        }
     }
 }
