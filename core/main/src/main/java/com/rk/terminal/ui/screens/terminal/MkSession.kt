@@ -39,13 +39,13 @@ object MkSession {
                 "EXTERNAL_STORAGE" to System.getenv("EXTERNAL_STORAGE")
             )
 
-            val workingDir: File
+            val workingDir: String
             val initHostFile: File
             val initInsideFile: File
 
             when (workingMode) {
                 WorkingMode.ALPINE -> {
-                    workingDir = alpineHomeDir()
+                    workingDir = alpineHomeDir().path
                     initHostFile = localBinDir().child("init-host")
                     initInsideFile = localBinDir().child("init")
 
@@ -59,7 +59,7 @@ object MkSession {
                     }
                 }
                 WorkingMode.UBUNTU -> {
-                    workingDir = filesDir.parentFile!!.resolve("local/ubuntu")
+                    workingDir = filesDir.parentFile!!.resolve("local/ubuntu").absolutePath
                     initHostFile = localBinDir().child("init-ubuntu-host")
                     initInsideFile = localBinDir().child("init-ubuntu")
 
@@ -73,7 +73,7 @@ object MkSession {
                     }
                 }
                 else -> {
-                    workingDir = pendingCommand?.workingDir ?: alpineHomeDir()
+                    workingDir = pendingCommand?.workingDir ?: alpineHomeDir().path
                     initHostFile = localBinDir().child("init-host")
                     initInsideFile = localBinDir().child("init")
 
