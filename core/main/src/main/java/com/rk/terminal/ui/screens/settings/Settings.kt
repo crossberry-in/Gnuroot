@@ -193,6 +193,7 @@ fun Settings(modifier: Modifier = Modifier,navController: NavController,mainActi
             SettingsToggle(
                 label = "About genroot",
                 showSwitch = false,
+                default = false,
                 sideEffect = {
                     navController.navigate(MainActivityRoutes.AppInfo.route)
                 },
